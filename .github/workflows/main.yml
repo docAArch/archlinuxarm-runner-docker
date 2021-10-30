@@ -1,0 +1,32 @@
+
+name: Publish Docker image
+
+on:
+  workflow_dispatch:
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: arm64
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/archlinuxarm-runner-docker:latest
+      
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/archlinuxarm-runner-docker:latest
